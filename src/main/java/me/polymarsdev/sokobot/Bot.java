@@ -24,12 +24,6 @@ import java.util.*;
 public class Bot {
     static HashMap<Long, String> prefixes = new HashMap<>();
 
-    /**
-     * You can enable the database here.
-     * Set the DB Type to MySQL or SQLite, which you want to use.
-     * -
-     * You can configure login data in the Database class.
-     */
     private static final boolean enableDatabase = false;
     private static final Database.DBType dbType = Database.DBType.SQLite;
 
@@ -39,31 +33,12 @@ public class Bot {
     private static Database database = null;
 
     public static void main(String[] args) throws LoginException {
-        String token = null;
-        try {
-            File tokenFile = Paths.get("token.txt").toFile();
-            if (!tokenFile.exists()) {
-                System.out.println("[ERROR] Could not find token.txt file");
-                System.out.print("Please paste in your bot token: ");
-                Scanner s = new Scanner(System.in);
-                token = s.nextLine();
-                System.out.println();
-                System.out.println("[INFO] Creating token.txt - please wait");
-                if (!tokenFile.createNewFile()) {
-                    System.out.println(
-                            "[ERROR] Could not create token.txt - please create this file and paste in your token"
-                                    + ".");
-                    s.close();
-                    return;
-                }
-                Files.write(tokenFile.toPath(), token.getBytes());
-                s.close();
-            }
-            token = new String(Files.readAllBytes(tokenFile.toPath()));
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        String token = System.getenv("BOT_TOKEN");
+        if (token == null) {
+            System.out.println("[ERROR] BOT_TOKEN environment variable not set.");
+            return;
         }
-        if (token == null) return;
+
         if (enableDatabase) database = new Database(dbType);
         if (database != null) {
             if (!database.isConnected()) {
@@ -123,10 +98,6 @@ public class Bot {
         System.out.println("Unknown command. Please use \"help\" for a list of commands.");
     }
 
-    /*
-    Debug Info for Developer information
-    > Limit update to 10 seconds minimum because of JDA shard checks
-     */
     private static long lastDebugInfoUpdate = -1L;
     private static String debugInfo = "";
 
@@ -142,7 +113,6 @@ public class Bot {
         debugInfo = a + b + c + d + "";
     }
 
-    // Print a message when debug is on
     public static void debug(String log) {
         if (debug) {
             updateDebugInfo();
